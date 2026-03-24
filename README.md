@@ -1,6 +1,8 @@
-# godo
+![godo-gopher](/assets/static/godo-gopher.png)
 
-A keyboard-driven terminal todo app with folder organization, markdown descriptions, and persistent SQLite storage.
+# GoDo
+
+A keyboard-driven terminal todo app with folder organization, markdown descriptions, and persistent SQLite storage. I wasn't happy with the todo apps I had access to at work, so I made this one. I'll keep refining it, but it's setup for how I like to use TUI apps, which may be weird to you.
 
 ## Features
 

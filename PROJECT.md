@@ -1,7 +1,5 @@
-![godo-gopher](/assets/static/godo-gopher.png)
-
 # Project
-GoDo is a todo application written in Go. I wasn't happy with the todo apps I had access to at work, so I made this one. I'll keep refining it, but it's setup for how I like to use TUI apps, which may be weird to you.
+GoDo is a todo application written in Go. It's purpose is to provide a TUI interface to create and manage to-do's.
 
 ## Interface
 The interface should be fairly simple. A sidebar on the left with folders and todo's. Folders are optional. The label for each should by the todo name or the folder name.
