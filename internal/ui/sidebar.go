@@ -47,6 +47,8 @@ type SidebarModel struct {
 	renameParent    *int64 // parent for a new folder
 	renameDepth     int    // visual indent depth for new folder row
 	confirmDelete   bool   // waiting for y/n confirmation to delete
+	pendingFocusKind model.NodeKind
+	pendingFocusID   int64
 }
 
 func NewSidebarModel() SidebarModel {
@@ -220,10 +222,14 @@ func (m SidebarModel) Update(msg tea.Msg) (SidebarModel, tea.Cmd) {
 				switch node.Kind {
 				case model.NodeFolder:
 					if cmd := m.indentFolder(node); cmd != nil {
+						m.pendingFocusKind = node.Kind
+						m.pendingFocusID = node.Folder.ID
 						return m, cmd
 					}
 				case model.NodeTask:
 					if cmd := m.indentTask(node); cmd != nil {
+						m.pendingFocusKind = node.Kind
+						m.pendingFocusID = node.Task.ID
 						return m, cmd
 					}
 				}
@@ -237,6 +243,8 @@ func (m SidebarModel) Update(msg tea.Msg) (SidebarModel, tea.Cmd) {
 					if node.Folder.ParentID != nil {
 						newParent := m.grandparentID(node.Folder)
 						folderID := node.Folder.ID
+						m.pendingFocusKind = node.Kind
+						m.pendingFocusID = folderID
 						return m, func() tea.Msg {
 							return ReparentFolderMsg{FolderID: folderID, NewParentID: newParent}
 						}
@@ -244,6 +252,8 @@ func (m SidebarModel) Update(msg tea.Msg) (SidebarModel, tea.Cmd) {
 				case model.NodeTask:
 					if node.Task.FolderID != nil {
 						taskID := node.Task.ID
+						m.pendingFocusKind = node.Kind
+						m.pendingFocusID = taskID
 						return m, func() tea.Msg {
 							return ReparentTaskMsg{TaskID: taskID, NewFolderID: nil}
 						}
@@ -366,6 +376,21 @@ func (m *SidebarModel) rebuildNodes() {
 	if m.cursor >= len(m.nodes) && len(m.nodes) > 0 {
 		m.cursor = len(m.nodes) - 1
 	}
+
+	if m.pendingFocusID != 0 {
+		for i, n := range m.nodes {
+			if n.Kind == m.pendingFocusKind {
+				if n.Kind == model.NodeFolder && n.Folder.ID == m.pendingFocusID {
+					m.cursor = i
+					break
+				} else if n.Kind == model.NodeTask && n.Task.ID == m.pendingFocusID {
+					m.cursor = i
+					break
+				}
+			}
+		}
+		m.pendingFocusID = 0
+	}
 }
 
 // indentFolder makes the folder a child of the nearest folder above it in the tree.
@@ -401,6 +426,12 @@ func (m *SidebarModel) swapWithSibling(dir int) tea.Cmd {
 			if m.nodes[i].Depth == cur.Depth {
 				sibling := m.nodes[i]
 				parentID := cur.ParentID()
+				m.pendingFocusKind = cur.Kind
+				if cur.Kind == model.NodeFolder {
+					m.pendingFocusID = cur.Folder.ID
+				} else {
+					m.pendingFocusID = cur.Task.ID
+				}
 				return func() tea.Msg { return SwapSiblingsMsg{A: cur, B: sibling, ParentID: parentID} }
 			}
 		}
@@ -412,6 +443,12 @@ func (m *SidebarModel) swapWithSibling(dir int) tea.Cmd {
 			if m.nodes[i].Depth == cur.Depth {
 				sibling := m.nodes[i]
 				parentID := cur.ParentID()
+				m.pendingFocusKind = cur.Kind
+				if cur.Kind == model.NodeFolder {
+					m.pendingFocusID = cur.Folder.ID
+				} else {
+					m.pendingFocusID = cur.Task.ID
+				}
 				return func() tea.Msg { return SwapSiblingsMsg{A: cur, B: sibling, ParentID: parentID} }
 			}
 		}

@@ -26,7 +26,12 @@ func RunUpdate(currentVersion string) {
 		return
 	}
 
-	if !found || latest.LessOrEqual(currentVersion) {
+	if !found {
+		fmt.Printf("Already up to date (version %s)\n", currentVersion)
+		return
+	}
+
+	if currentVersion != "dev" && latest.LessOrEqual(currentVersion) {
 		fmt.Printf("Already up to date (version %s)\n", currentVersion)
 		return
 	}
