@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	"fmt"
+	"os"
 
 	selfupdate "github.com/creativeprojects/go-selfupdate"
 )
@@ -37,7 +38,12 @@ func RunUpdate(currentVersion string) {
 	}
 
 	fmt.Printf("Updating to version %s...\n", latest.Version())
-	if _, err := selfupdate.UpdateSelf(ctx, latest.Version(), repo); err != nil {
+	exe, err := os.Executable()
+	if err != nil {
+		fmt.Printf("Error getting executable path: %v\n", err)
+		return
+	}
+	if err := updater.UpdateTo(ctx, latest, exe); err != nil {
 		fmt.Printf("Update failed: %v\n", err)
 		return
 	}
