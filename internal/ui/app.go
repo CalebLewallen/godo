@@ -235,16 +235,13 @@ func (m *AppModel) resize() {
 	if m.sidebarOpen {
 		m.sidebar.width = sidebarWidth
 		m.sidebar.height = m.height
-		m.taskPanel.width = m.width - sidebarWidth
-		m.taskPanel.height = m.height
+		m.taskPanel.Resize(m.width-sidebarWidth, m.height)
 	} else {
 		m.sidebar.width = 0
 		m.sidebar.height = 0
-		m.taskPanel.width = m.width
-		m.taskPanel.height = m.height
+		m.taskPanel.Resize(m.width, m.height)
 	}
 }
-
 
 func (m *AppModel) createNamedFolder(name string, parentID *int64) tea.Cmd {
 	return func() tea.Msg {
@@ -368,4 +365,3 @@ func (m AppModel) View() string {
 	}
 	return m.taskPanel.View()
 }
-
