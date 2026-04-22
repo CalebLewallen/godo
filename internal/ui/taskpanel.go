@@ -25,7 +25,7 @@ const (
 type closePromptChoice int
 
 const (
-	choiceNone    closePromptChoice = iota
+	choiceNone closePromptChoice = iota
 	choiceSave
 	choiceDiscard
 	choiceCancel
@@ -40,8 +40,8 @@ type TaskPanelModel struct {
 	task         model.Task
 	hasTask      bool
 	activeField  taskField
-	dirty     bool
-	showClose bool
+	dirty        bool
+	showClose    bool
 	nameInput    textinput.Model
 	dueDateInput textinput.Model
 	folderInput  textinput.Model
@@ -76,6 +76,19 @@ func NewTaskPanelModel(database *db.DB) TaskPanelModel {
 		folderInput:  folder,
 		descTA:       desc,
 	}
+}
+
+func (m *TaskPanelModel) Resize(w, h int) {
+	m.width = w
+	m.height = h
+	innerWidth := w - 4
+	usedLines := 17
+	descHeight := h - usedLines
+	if descHeight < 3 {
+		descHeight = 3
+	}
+	m.descTA.SetWidth(innerWidth)
+	m.descTA.SetHeight(descHeight)
 }
 
 func (m TaskPanelModel) Init() tea.Cmd {
@@ -118,7 +131,6 @@ func (m TaskPanelModel) Update(msg tea.Msg) (TaskPanelModel, tea.Cmd) {
 				return m, m.saveTask()
 			}
 			return m, nil
-
 
 		case key.Matches(msg, TaskBindings.Save):
 			return m, m.saveTask()
@@ -285,7 +297,6 @@ func (m TaskPanelModel) updateActiveField(msg tea.KeyMsg) (TaskPanelModel, tea.C
 	return m, cmd
 }
 
-
 func (m TaskPanelModel) View() string {
 	if !m.hasTask {
 		style := panelStyle.Width(m.width - 2).Height(m.height - 2)
@@ -377,8 +388,6 @@ func (m TaskPanelModel) View() string {
 
 	if m.activeField == fieldDescription {
 		// Edit mode: show the textarea with cursor.
-		m.descTA.SetWidth(innerWidth)
-		m.descTA.SetHeight(descHeight)
 		sb.WriteString(m.descTA.View() + "\n")
 	} else {
 		// Display mode: render with OSC 8 links, bypassing lipgloss wrapping
