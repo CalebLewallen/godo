@@ -33,6 +33,7 @@ type SidebarModel struct {
 	height          int
 	activeTab       sidebarTab
 	folders         []model.Folder
+	folderMap       map[int64]*model.Folder
 	incompleteTasks []model.Task
 	completedTasks  []model.Task
 	expandedFolders map[int64]bool
@@ -63,6 +64,7 @@ func NewSidebarModel() SidebarModel {
 		expandedFolders: make(map[int64]bool),
 		filterInput:     filter,
 		renameInput:     rename,
+		folderMap:       make(map[int64]*model.Folder),
 	}
 }
 
@@ -285,6 +287,11 @@ func (m SidebarModel) Update(msg tea.Msg) (SidebarModel, tea.Cmd) {
 
 	case TreeLoadedMsg:
 		m.folders = msg.Folders
+		m.folderMap = make(map[int64]*model.Folder, len(m.folders))
+		for i := range m.folders {
+			m.folderMap[m.folders[i].ID] = &m.folders[i]
+		}
+
 		m.incompleteTasks = msg.Tasks
 		// Filter out completed
 		var incomplete, completed []model.Task
@@ -477,10 +484,8 @@ func (m *SidebarModel) grandparentID(f *model.Folder) *int64 {
 	if f.ParentID == nil {
 		return nil
 	}
-	for i := range m.folders {
-		if m.folders[i].ID == *f.ParentID {
-			return m.folders[i].ParentID
-		}
+	if parent, ok := m.folderMap[*f.ParentID]; ok {
+		return parent.ParentID
 	}
 	return nil
 }
