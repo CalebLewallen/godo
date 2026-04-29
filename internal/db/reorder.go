@@ -78,13 +78,16 @@ func (d *DB) SwapSiblings(parentID *int64, aIsFolder bool, aID int64, bIsFolder 
 
 	// Write back the two changed items (and the normalised positions for all).
 	for _, it := range items {
-		table := "tasks"
 		if it.isFolder {
-			table = "folders"
-		}
-		if _, err := tx.Exec(`UPDATE `+table+` SET position=? WHERE id=?`, it.pos, it.id); err != nil {
-			tx.Rollback()
-			return err
+			if _, err := tx.Exec(`UPDATE folders SET position=? WHERE id=?`, it.pos, it.id); err != nil {
+				tx.Rollback()
+				return err
+			}
+		} else {
+			if _, err := tx.Exec(`UPDATE tasks SET position=? WHERE id=?`, it.pos, it.id); err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 	return tx.Commit()
